@@ -1,0 +1,38 @@
+name: Build Magisk Module
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Package Module
+        run: |
+          MODULE_DIR="magisk_overlayfs"
+          OUTPUT_ZIP="overlayfs_module.zip"
+          
+          # Create zip structure
+          mkdir -p ${MODULE_DIR}/META-INF/com/google/android
+          cp -r ${MODULE_DIR}/system ${MODULE_DIR}/common ${MODULE_DIR}/customize.sh ${MODULE_DIR}/module.prop .
+          
+          # Package files
+          zip -r ${OUTPUT_ZIP} META-INF system common customize.sh module.prop
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: magisk-module
+          path: overlayfs_module.zip
